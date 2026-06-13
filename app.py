@@ -30,7 +30,7 @@ with st.form("novo_gasto_form"):
         "Moradia", "Alimentação", "Transporte", "Assinaturas", 
         "Cuidados Pessoais", "Diversos", "Graduação", 
         "Vestimenta", "Tecnologia", "Móveis", "Eletrodomésticos", 
-        "Lazer", "Saúde", "Cigarro", "Reserva de Emergência"
+        "Lazer", "Saúde", "Cigarro", "Reserva de Emergência", "Comer Fora na Semana"
     ])
     
     tipo = st.radio("Tipo", ["Fixo", "Variável"])
