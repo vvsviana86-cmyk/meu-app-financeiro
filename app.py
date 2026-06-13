@@ -4,7 +4,29 @@ import matplotlib.pyplot as plt
 import os
 from datetime import datetime
 
-st.set_page_config(page_title="Meu Futuro Financeiro", layout="centered")
+st.set_page_config(page_title="Meu Futuro Financeiro", layout="centered") 
+# --- TRUQUE DE DESIGN: FUNDO DE GIRASSOL ---
+page_bg_img = '''
+<style>
+/* Coloca a foto do girassol no fundo de tudo */
+[data-testid="stAppViewContainer"] {
+    background-image: url("https://images.unsplash.com/photo-1473280025148-643f9b0cbac2?q=80&w=1080&auto=format&fit=crop");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+/* Deixa o topo do aplicativo transparente */
+[data-testid="stHeader"] {
+    background: rgba(0,0,0,0);
+}
+/* Aplica a sua cor lilás com 88% de transparência para não atrapalhar a leitura */
+[data-testid="stAppViewContainer"] > .main {
+    background-color: rgba(249, 244, 249, 0.88);
+}
+</style>
+'''
+st.markdown(page_bg_img, unsafe_allow_html=True)
+# ------------------------------------------
 st.title("🚀 Controle e Previsão Financeira")
 
 arquivo_excel = 'meu_fluxo_caixa.xlsx'
