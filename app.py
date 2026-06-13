@@ -2,74 +2,107 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
+from datetime import datetime
 
-# Configuração da página
-st.set_page_config(page_title="Meu Orçamento", layout="centered")
+st.set_page_config(page_title="Meu Futuro Financeiro", layout="centered")
+st.title("🚀 Controle e Previsão Financeira")
 
-st.title("💸 Meu Controlador Financeiro")
+arquivo_excel = 'meu_fluxo_caixa.xlsx'
 
-# 1. Carregando os dados
-arquivo_excel = 'meu_orcamento.xlsx'
-
+# 1. Nova estrutura inteligente de dados
 def carregar_dados():
     if os.path.exists(arquivo_excel):
         return pd.read_excel(arquivo_excel)
     else:
-        return pd.DataFrame(columns=['Descrição', 'Categoria', 'Tipo', 'Forma_Pagamento', 'Valor (R$)', 'Vencimento', 'Status'])
+        # Colunas novas para suportar previsão e entradas
+        return pd.DataFrame(columns=['Mês_Referência', 'Natureza', 'Categoria', 'Descrição', 'Valor (R$)', 'Status'])
 
-df_financeiro = carregar_dados()
+df = carregar_dados()
 
-# 2. Formulário para adicionar novos gastos pelo celular
-st.header("📝 Adicionar Novo Gasto")
+# 2. Criando Abas para organizar a tela do celular
+aba_lancamentos, aba_dashboard = st.tabs(["📝 Novos Lançamentos", "📊 Painel e Previsões"])
 
-with st.form("novo_gasto_form"):
-    descricao = st.text_input("Descrição (Ex: Uber, Almoço)")
+with aba_lancamentos:
+    st.header("Registrar Movimentação")
     
-    # LISTA DE CATEGORIAS ATUALIZADA
-    categoria = st.selectbox("Categoria", [
-        "Moradia", "Alimentação", "Transporte", "Assinaturas", 
-        "Cuidados Pessoais", "Diversos", "Graduação", 
-        "Vestimenta", "Tecnologia", "Móveis", "Eletrodomésticos", 
-        "Lazer", "Saúde", "Cigarro", "Reserva de Emergência", "Comer Fora na Semana"
-    ])
+    with st.form("novo_registro"):
+        # Qual mês estamos planejando?
+        meses_futuros = ["Junho/2026", "Julho/2026", "Agosto/2026", "Setembro/2026", "Outubro/2026", "Novembro/2026", "Dezembro/2026"]
+        mes_ref = st.selectbox("Mês de Referência", meses_futuros)
+        
+        natureza = st.radio("O que você está registrando?", ["Despesa", "Receita", "Reserva/Investimento"])
+        
+        # O aplicativo muda as opções dependendo do que você escolheu
+        if natureza == "Receita":
+            categoria = st.selectbox("Origem", ["Adiantamento (Dia 20)", "Salário (5º dia útil)", "Férias", "13º Salário", "Renda Extra"])
+            status = st.selectbox("Status", ["Recebido", "A Receber (Previsão)"])
+        
+        elif natureza == "Reserva/Investimento":
+            categoria = st.selectbox("Destino", ["Reserva de Emergência", "Cofrinho (Objetivos)"])
+            status = st.selectbox("Status", ["Guardado", "A Guardar (Previsão)"])
+            
+        else: # Despesa
+            categoria = st.selectbox("Categoria", [
+                "Moradia", "Alimentação", "Transporte", "Assinaturas", 
+                "Cuidados Pessoais", "Diversos", "Graduação", 
+                "Vestimenta", "Tecnologia", "Móveis", "Eletrodomésticos", 
+                "Lazer", "Saúde", "Cigarro", "Fatura Cartão de Crédito"
+            ])
+            status = st.selectbox("Status", ["Pago", "A Pagar (Previsão)"])
+
+        descricao = st.text_input("Descrição detalhada")
+        valor = st.number_input("Valor (R$)", min_value=0.0, format="%.2f")
+        
+        if st.form_submit_button("Salvar Registro"):
+            novo_dado = pd.DataFrame([{
+                'Mês_Referência': mes_ref, 'Natureza': natureza, 
+                'Categoria': categoria, 'Descrição': descricao, 
+                'Valor (R$)': valor, 'Status': status
+            }])
+            df = pd.concat([df, novo_dado], ignore_index=True)
+            df.to_excel(arquivo_excel, index=False)
+            st.success(f"Registro salvo com sucesso para {mes_ref}!")
+            st.rerun()
+
+with aba_dashboard:
+    st.header("Visão Geral do Mês")
     
-    tipo = st.radio("Tipo", ["Fixo", "Variável"])
-    forma_pag = st.selectbox("Forma de Pagamento", ["Cartão de Crédito", "PIX", "Boleto", "Débito"])
-    valor = st.number_input("Valor (R$)", min_value=0.0, format="%.2f")
-    
-    submit_button = st.form_submit_button(label="Salvar Gasto")
-
-    if submit_button:
-        novo_dado = pd.DataFrame([{
-            'Descrição': descricao, 'Categoria': categoria, 'Tipo': tipo, 
-            'Forma_Pagamento': forma_pag, 'Valor (R$)': valor, 
-            'Vencimento': '-', 'Status': 'Pago'
-        }])
-        df_financeiro = pd.concat([df_financeiro, novo_dado], ignore_index=True)
-        df_financeiro.to_excel(arquivo_excel, index=False)
-        st.success(f"Gasto '{descricao}' adicionado com sucesso!")
-        st.rerun()
-
-st.divider()
-
-# 3. Painel de Resumo (Atualizado sem o Salário Fixo)
-st.header("📊 Resumo do Mês")
-
-if not df_financeiro.empty:
-    total_gasto = df_financeiro['Valor (R$)'].sum()
-
-    # Mostra apenas o total gasto de forma limpa
-    st.metric("Total Gasto no Mês", f"R$ {total_gasto:.2f}")
-
-    # 4. O Gráfico
-    st.subheader("Distribuição do Orçamento")
-    gastos_categoria = df_financeiro.groupby('Categoria')['Valor (R$)'].sum()
-    
-    # Nova paleta de cores dinâmica para suportar muitas categorias
-    fig, ax = plt.subplots(figsize=(6, 6))
-    gastos_categoria.plot(kind='pie', autopct='%1.1f%%', cmap='tab20', startangle=90, ax=ax)
-    ax.set_ylabel('')
-    
-    st.pyplot(fig)
-else:
-    st.info("Nenhum gasto registrado ainda.")
+    # Filtro para você escolher qual mês quer analisar
+    if not df.empty:
+        mes_selecionado = st.selectbox("Selecione o mês para análise:", df['Mês_Referência'].unique())
+        
+        # Filtra os dados apenas para o mês escolhido
+        df_mes = df[df['Mês_Referência'] == mes_selecionado]
+        
+        # Cálculos automáticos do mês
+        total_receitas = df_mes[df_mes['Natureza'] == 'Receita']['Valor (R$)'].sum()
+        total_despesas = df_mes[df_mes['Natureza'] == 'Despesa']['Valor (R$)'].sum()
+        total_reservas = df_mes[df_mes['Natureza'] == 'Reserva/Investimento']['Valor (R$)'].sum()
+        
+        saldo_livre = total_receitas - total_despesas - total_reservas
+        
+        # Exibição das métricas
+        col1, col2 = st.columns(2)
+        col1.metric("Entradas Previstas", f"R$ {total_receitas:.2f}")
+        col2.metric("Saídas e Faturas", f"R$ {total_despesas:.2f}")
+        
+        col3, col4 = st.columns(2)
+        col3.metric("Guardado/Investido", f"R$ {total_reservas:.2f}")
+        col4.metric("Saldo Livre Estimado", f"R$ {saldo_livre:.2f}")
+        
+        st.divider()
+        
+        # Gráfico apenas das despesas para entender os ralos de dinheiro
+        st.subheader(f"Composição de Gastos - {mes_selecionado}")
+        df_gastos = df_mes[df_mes['Natureza'] == 'Despesa']
+        if not df_gastos.empty:
+            gastos_cat = df_gastos.groupby('Categoria')['Valor (R$)'].sum()
+            fig, ax = plt.subplots(figsize=(5, 5))
+            gastos_cat.plot(kind='pie', autopct='%1.1f%%', cmap='Set3', startangle=90, ax=ax)
+            ax.set_ylabel('')
+            st.pyplot(fig)
+        else:
+            st.info("Ainda não há despesas lançadas para este mês.")
+            
+    else:
+        st.info("Nenhum dado registrado. Comece a lançar na aba ao lado!")
