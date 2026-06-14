@@ -10,7 +10,7 @@ page_bg_img = '''
 <style>
 /* Coloca a foto do girassol no fundo de tudo */
 [data-testid="stAppViewContainer"] {
-    background-image: url("https://images.unsplash.com/photo-1473280025148-643f9b0cbac2?q=80&w=1080&auto=format&fit=crop");
+    background-image: url("https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Sunflower_sky_backdrop.jpg/1024px-Sunflower_sky_backdrop.jpg");
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
