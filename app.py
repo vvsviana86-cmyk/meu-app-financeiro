@@ -4,13 +4,12 @@ import matplotlib.pyplot as plt
 import os
 from datetime import datetime
 
-st.set_page_config(page_title="Meu Futuro Financeiro", layout="centered") 
 # --- TRUQUE DE DESIGN: FUNDO DE GIRASSOL ---
 page_bg_img = '''
 <style>
 /* Coloca a foto do girassol no fundo de tudo */
 [data-testid="stAppViewContainer"] {
-    background-image: url("https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Sunflower_sky_backdrop.jpg/1024px-Sunflower_sky_backdrop.jpg");
+    background-image: url("https://images.unsplash.com/photo-1597848212624-a19eb35e2651?q=80&w=1080&auto=format&fit=crop");
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -26,6 +25,7 @@ page_bg_img = '''
 </style>
 '''
 st.markdown(page_bg_img, unsafe_allow_html=True)
+# ------------------------------------------
 # ------------------------------------------
 st.title("🚀 Controle e Previsão Financeira")
 
